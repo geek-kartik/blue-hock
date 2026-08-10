@@ -1,0 +1,23 @@
+# Gradle
+.gradle/
+build/
+*/build/
+
+# Kotlin
+.kotlin/
+
+# Local configuration
+local.properties
+
+# IDE - IntelliJ / Android Studio
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Logs
+*.log
+
+# OS
+.DS_Store

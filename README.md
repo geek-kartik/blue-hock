@@ -24,10 +24,11 @@ graph TD
 *   `sampleapp/` (Game App, package `com.client.bluehock`):
     *   `AirHockeyActivity` (launcher) handling BLE runtime permissions.
     *   `AirHockeyViewModel` bridging the UI to `GameSdk`.
+    *   **bluetooth/**: `BluetoothController` — reads the adapter state and enables/disables Bluetooth from inside the app (no settings redirect).
     *   **ui/** Jetpack Compose screen (scalable, feature-split layout):
-        *   `AirHockeyScreen` — screen orchestration: score header, board, phase overlays and connection controls.
+        *   `AirHockeyScreen` — screen orchestration: Bluetooth strip, score header, board, phase overlays and connection controls.
         *   **board/**: `AirHockeyBoard` (drag input + per-frame canvas rendering), `BoardRenderer` (paddle / puck / goal-net drawing primitives), `BoardInterpolator` (snapshot smoothing), `BoardColors` (table and paddle palette).
-        *   **components/**: `ScoreHeader`, `PhaseOverlay` (waiting / countdown / winner), `ControlBar` (host / find / join / disconnect).
+        *   **components/**: `BluetoothStatusSection` (in-app Bluetooth on/off + tethering guide), `ScoreHeader`, `PhaseOverlay` (waiting / countdown / winner), `ControlBar` (host / find / join / disconnect).
         *   **theme/**: Material theme, typography and colors.
 
 ---
@@ -102,10 +103,12 @@ Requires **two Android devices** with Bluetooth (BLE).
 
 1. Build and install the **sampleapp** on both devices.
 2. Grant Bluetooth, Location (and advertising on Android 12+) permissions.
-3. On **Device 1** tap **Host Game** — it starts advertising and waits.
-4. On **Device 2** tap **Find Game**, select the discovered host, then **Join**.
-5. The countdown starts automatically; drag your half of the board to move your paddle.
-6. Play until **7 total goals**; the winner screen appears, then either player taps **Play Again**.
+3. On **Device 1** the app shows the Bluetooth strip; tap **Turn On** if Bluetooth is off (enabled in-app, no settings redirect).
+4. Optionally tap **Bluetooth Tethering** for the guide and enable tethering on the host for a more stable link.
+5. On **Device 1** tap **Host Game** — it starts advertising and waits.
+6. On **Device 2** tap **Find Game**, select the discovered host, then **Join**.
+7. The countdown starts automatically; drag your half of the board to move your paddle.
+8. Play until **7 total goals**; the winner screen appears, then either player taps **Play Again**.
 
 ### Build
 

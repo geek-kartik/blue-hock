@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.client.bluehock.gamesdk.model.GameConstants
 import com.client.bluehock.ui.board.AirHockeyBoard
+import com.client.bluehock.ui.components.BluetoothStatusSection
 import com.client.bluehock.ui.components.ControlBar
 import com.client.bluehock.ui.components.PhaseOverlay
 import com.client.bluehock.ui.components.ScoreHeader
@@ -43,6 +44,10 @@ fun AirHockeyScreen(viewModel: AirHockeyViewModel) {
             .fillMaxSize()
             .padding(12.dp)
     ) {
+        BluetoothStatusSection()
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         ScoreHeader(state = state, isHost = isHost)
 
         Spacer(modifier = Modifier.height(8.dp))

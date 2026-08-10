@@ -52,6 +52,21 @@ fun AirHockeyScreen(viewModel: AirHockeyViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        ControlBar(
+            connection = connection,
+            scanning = scanning,
+            devices = devices,
+            isHost = isHost,
+            state = state,
+            onHost = viewModel::hostGame,
+            onScan = viewModel::startScan,
+            onStopScan = viewModel::stopScan,
+            onConnect = viewModel::connect,
+            onDisconnect = viewModel::disconnect
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -77,21 +92,6 @@ fun AirHockeyScreen(viewModel: AirHockeyViewModel) {
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ControlBar(
-            connection = connection,
-            scanning = scanning,
-            devices = devices,
-            isHost = isHost,
-            state = state,
-            onHost = viewModel::hostGame,
-            onScan = viewModel::startScan,
-            onStopScan = viewModel::stopScan,
-            onConnect = viewModel::connect,
-            onDisconnect = viewModel::disconnect
-        )
 
         if (logs.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))

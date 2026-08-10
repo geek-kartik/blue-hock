@@ -10,7 +10,7 @@ Clean multi-module setup separating the reusable game SDK from the Compose app:
 
 ```mermaid
 graph TD
-    A[sampleapp (Game UI - Compose)] -->|Depends on| B[gamesdk (Air Hockey SDK)]
+    A["sampleapp (Game UI - Compose)"] -->|"Depends on"| B["gamesdk (Air Hockey SDK)"]
 ```
 
 ### Module Structure
@@ -22,9 +22,13 @@ graph TD
     *   **protocol/**: `GameProtocol` — compact little-endian binary (de)serialization for state snapshots, paddle input and control messages.
     *   **model/**: `GameConstants`, `GameRole`, `GamePhase`, `GameConnectionState`, `GameDeviceInfo`, `AirHockeyState`.
 *   `sampleapp/` (Game App, package `com.client.bluehock`):
-    *   Jetpack Compose UI (`AirHockeyScreen`) with a draggable board, score header, countdown / goal / winner overlays, and host/join controls.
-    *   `AirHockeyViewModel` bridging the UI to `GameSdk`.
     *   `AirHockeyActivity` (launcher) handling BLE runtime permissions.
+    *   `AirHockeyViewModel` bridging the UI to `GameSdk`.
+    *   **ui/** Jetpack Compose screen (scalable, feature-split layout):
+        *   `AirHockeyScreen` — screen orchestration: score header, board, phase overlays and connection controls.
+        *   **board/**: `AirHockeyBoard` (drag input + per-frame canvas rendering), `BoardRenderer` (paddle / puck / goal-net drawing primitives), `BoardInterpolator` (snapshot smoothing), `BoardColors` (table and paddle palette).
+        *   **components/**: `ScoreHeader`, `PhaseOverlay` (waiting / countdown / winner), `ControlBar` (host / find / join / disconnect).
+        *   **theme/**: Material theme, typography and colors.
 
 ---
 

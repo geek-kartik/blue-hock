@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.lerp
-import com.client.bluehock.gamesdk.model.GameConstants
+import com.client.blekotsdk.game.model.GameConstants
 
 /**
  * Renders a hockey mallet with a domed radial-gradient body and two strong

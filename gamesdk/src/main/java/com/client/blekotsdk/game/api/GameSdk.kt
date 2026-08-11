@@ -1,9 +1,10 @@
-package com.client.bluehock.gamesdk
+package com.client.blekotsdk.game.api
 
 import android.content.Context
-import com.client.bluehock.gamesdk.model.AirHockeyState
-import com.client.bluehock.gamesdk.model.GameConnectionState
-import com.client.bluehock.gamesdk.model.GameDeviceInfo
+import com.client.blekotsdk.game.model.AirHockeyState
+import com.client.blekotsdk.game.model.GameConnectionState
+import com.client.blekotsdk.game.model.GameDeviceInfo
+import com.client.blekotsdk.game.session.GameSession
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
  * authoritative simulation and GATT server), the other joins by scanning,
  * connecting and streaming state snapshots.
  *
- * Game rule: play until [com.client.bluehock.gamesdk.model.GameConstants.TOTAL_GOALS]
+ * Game rule: play until [com.client.blekotsdk.game.model.GameConstants.TOTAL_GOALS]
  * goals are scored in total. The player with the most goals wins and the
  * match can be restarted.
  *

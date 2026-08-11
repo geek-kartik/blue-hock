@@ -1,10 +1,10 @@
-package com.client.bluehock.gamesdk
+package com.client.blekotsdk.game
 
-import com.client.bluehock.gamesdk.engine.AirHockeyEngine
-import com.client.bluehock.gamesdk.model.AirHockeyState
-import com.client.bluehock.gamesdk.model.GameConstants
-import com.client.bluehock.gamesdk.model.GamePhase
-import com.client.bluehock.gamesdk.protocol.GameProtocol
+import com.client.blekotsdk.game.engine.AirHockeyEngine
+import com.client.blekotsdk.game.model.AirHockeyState
+import com.client.blekotsdk.game.model.GameConstants
+import com.client.blekotsdk.game.model.GamePhase
+import com.client.blekotsdk.game.protocol.GameProtocol
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

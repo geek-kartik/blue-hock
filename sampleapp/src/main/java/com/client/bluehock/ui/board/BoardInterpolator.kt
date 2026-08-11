@@ -1,6 +1,6 @@
 package com.client.bluehock.ui.board
 
-import com.client.bluehock.gamesdk.model.AirHockeyState
+import com.client.blekotsdk.game.model.AirHockeyState
 
 /**
  * Interpolates between the two most recent host snapshots so the puck and

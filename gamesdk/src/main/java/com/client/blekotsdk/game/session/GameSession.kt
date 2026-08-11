@@ -1,16 +1,18 @@
-package com.client.bluehock.gamesdk
+package com.client.blekotsdk.game.session
 
 import android.content.Context
-import com.client.bluehock.gamesdk.ble.GameGattClient
-import com.client.bluehock.gamesdk.ble.GameGattServer
-import com.client.bluehock.gamesdk.ble.GameScanner
-import com.client.bluehock.gamesdk.engine.AirHockeyEngine
-import com.client.bluehock.gamesdk.model.AirHockeyState
-import com.client.bluehock.gamesdk.model.GameConnectionState
-import com.client.bluehock.gamesdk.model.GameConstants
-import com.client.bluehock.gamesdk.model.GameDeviceInfo
-import com.client.bluehock.gamesdk.model.GamePhase
-import com.client.bluehock.gamesdk.protocol.GameProtocol
+import com.client.blekotsdk.api.BleKotSdk
+import com.client.blekotsdk.game.ble.GameBleClient
+import com.client.blekotsdk.game.ble.GameBleServer
+import com.client.blekotsdk.game.ble.GameGattProfile
+import com.client.blekotsdk.game.ble.GameScanner
+import com.client.blekotsdk.game.engine.AirHockeyEngine
+import com.client.blekotsdk.game.model.AirHockeyState
+import com.client.blekotsdk.game.model.GameConnectionState
+import com.client.blekotsdk.game.model.GameConstants
+import com.client.blekotsdk.game.model.GameDeviceInfo
+import com.client.blekotsdk.game.model.GamePhase
+import com.client.blekotsdk.game.protocol.GameProtocol
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -36,8 +38,8 @@ class GameSession(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val engine = AirHockeyEngine()
 
-    private var server: GameGattServer? = null
-    private var client: GameGattClient? = null
+    private var server: GameBleServer? = null
+    private var client: GameBleClient? = null
     private var hostLoopJob: Job? = null
     private var scanFlowJob: Job? = null
 
@@ -61,6 +63,10 @@ class GameSession(private val context: Context) {
     var isHost: Boolean = false
         private set
 
+    init {
+        BleKotSdk.initialize(context)
+    }
+
     // ----- Host mode ------------------------------------------------------
 
     /**
@@ -73,8 +79,7 @@ class GameSession(private val context: Context) {
         winner = 0
         engine.reset()
 
-        server = GameGattServer(
-            context,
+        server = GameBleServer(
             onInput = { x, y, pressure -> engine.setClientTarget(x, y, pressure) },
             onControl = { op -> handleClientControl(op) },
             onConnectionChange = { connected ->
@@ -239,7 +244,7 @@ class GameSession(private val context: Context) {
     // ----- Client mode -----------------------------------------------------
 
     fun startScan(): Flow<GameDeviceInfo> {
-        val scanner = GameScanner(context)
+        val scanner = GameScanner()
         return scanner.startScan()
     }
 
@@ -255,8 +260,7 @@ class GameSession(private val context: Context) {
         if (isHost) return
         _connection.value = GameConnectionState.CONNECTING
 
-        val c = GameGattClient(
-            context,
+        val c = GameBleClient(
             onState = { snapshot -> _state.value = snapshot },
             onConnectionChange = { connected ->
                 _connection.value = if (connected) GameConnectionState.CONNECTED else GameConnectionState.DISCONNECTED
@@ -267,8 +271,8 @@ class GameSession(private val context: Context) {
 
         try {
             c.connect(device.address)
-            c.enableNotifications(GameConstants.STATE_CHAR_UUID)
-            c.enableNotifications(GameConstants.CONTROL_CHAR_UUID)
+            c.enableNotifications(GameGattProfile.STATE_CHAR_UUID)
+            c.enableNotifications(GameGattProfile.CONTROL_CHAR_UUID)
             _connection.value = GameConnectionState.CONNECTED
             c.sendControl(GameConstants.OP_READY)
         } catch (e: Exception) {

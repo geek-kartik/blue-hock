@@ -14,6 +14,10 @@ are synchronized wirelessly in real time.
 This is a **native Android / Kotlin project** (NOT Flutter, despite the
 `flutter/sdk` directory path).
 
+The repo is built around a **layered, reusable BLE SDK**: a generic core
+library (`blekotsdk`) that any BLE app can use, and a thin game-specific layer
+(`gamesdk`) that implements Air Hockey on top of it.
+
 ## Tech stack
 
 - Kotlin 2.4, Android Gradle Plugin 9.2, Gradle Kotlin DSL (`*.gradle.kts`)
@@ -26,15 +30,23 @@ This is a **native Android / Kotlin project** (NOT Flutter, despite the
 
 ```
 ble-connect-game/
-├── settings.gradle.kts        # rootProject.name = "bluehock"; includes :gamesdk, :sampleapp
+├── settings.gradle.kts        # rootProject.name = "bluehock"; includes :blekotsdk, :gamesdk, :sampleapp
 ├── build.gradle.kts           # top-level plugin aliases only
 ├── gradle/libs.versions.toml  # version catalog (single source of dependency versions)
-├── gamesdk/                   # public Android library — reusable game SDK
-│   └── src/main/java/com/client/bluehock/gamesdk/
-│       ├── GameSdk.kt         # public entry point (object): hostGame, startScan, connect,
+├── blekotsdk/                 # public Android library — generic, app-agnostic BLE SDK
+│   └── src/main/java/com/client/blekotsdk/
+│       ├── api/BleKotSdk.kt   # public entry point (object): initialize, startScan,
+│       │                      #   newConnection, newServer
+│       ├── ble/               # BleScanner, BleConnection, BleGattServer (generic GATT)
+│       ├── model/             # BleDevice, ConnectionState, BleSdkError, BleConstants,
+│       │                      #   GattServiceProfile
+│       └── logging/           # Logger, SdkLog, AndroidLogLogger
+├── gamesdk/                   # public Android library — Air Hockey on top of blekotsdk
+│   └── src/main/java/com/client/blekotsdk/game/
+│       ├── api/GameSdk.kt     # public entry point (object): hostGame, startScan, connect,
 │       │                      #   sendPaddle, restart, disconnect, observeState/Connection/Errors
-│       ├── GameSession.kt     # internal orchestration: hosts/joins, owns engine + GATT
-│       ├── ble/               # GameGattServer, GameGattClient, GameScanner
+│       ├── session/GameSession.kt  # internal orchestration: hosts/joins, owns engine + GATT
+│       ├── ble/               # GameBleClient, GameBleServer, GameScanner, GameGattProfile
 │       ├── engine/            # AirHockeyEngine — deterministic physics + goal detection
 │       ├── protocol/          # GameProtocol — little-endian binary encode/decode
 │       └── model/             # GameConstants, GameRole, GamePhase, GameConnectionState,
@@ -69,9 +81,12 @@ Run from the repository root (`./gradlew` wrapper):
 - **SDK / UI split**: `gamesdk` must stay UI-free and app-agnostic. All UI lives
   in `sampleapp`. Game state flows one way: engine → `GameSession` → `StateFlow`
   → ViewModel → Compose. The UI never mutates game state directly.
-- **Packages**: app = `com.client.bluehock`, SDK = `com.client.bluehock.gamesdk`.
+- **Packages**: app = `com.client.bluehock`, BLE core = `com.client.blekotsdk`,
+  game SDK = `com.client.blekotsdk.game`.
 - **Visibility**: `AirHockeyScreen` and `GameSdk` are the only public entry
-  points. Internal helpers (composables, engine bits) use `internal`.
+  points in the app / game layer; `BleKotSdk` is the only public entry point of
+  `blekotsdk`. Internal helpers (composables, engine bits, BLE internals) use
+  `internal`.
 - **State**: ViewModel exposes `StateFlow`; UI reads via `collectAsState()`.
 - **Compose organization**: split components by feature into `ui/components/`
   (screens/sections) and `ui/board/` (canvas/game rendering). One logical unit

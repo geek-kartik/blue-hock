@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.client.bluehock.gamesdk.model.GameConstants
+import com.client.blekotsdk.game.model.GameConstants
 import com.client.bluehock.ui.board.AirHockeyBoard
 import com.client.bluehock.ui.components.BluetoothStatusSection
 import com.client.bluehock.ui.components.ControlBar

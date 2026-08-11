@@ -12,8 +12,8 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
-import com.client.bluehock.gamesdk.model.AirHockeyState
-import com.client.bluehock.gamesdk.model.GameConstants
+import com.client.blekotsdk.game.model.AirHockeyState
+import com.client.blekotsdk.game.model.GameConstants
 
 /**
  * Maps a screen-space Y to host-frame logical Y. The host plays "as is"

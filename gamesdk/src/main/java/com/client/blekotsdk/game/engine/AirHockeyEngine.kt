@@ -1,6 +1,6 @@
-package com.client.bluehock.gamesdk.engine
+package com.client.blekotsdk.game.engine
 
-import com.client.bluehock.gamesdk.model.GameConstants
+import com.client.blekotsdk.game.model.GameConstants
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.sqrt

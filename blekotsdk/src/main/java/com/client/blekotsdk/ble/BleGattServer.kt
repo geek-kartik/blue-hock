@@ -1,4 +1,4 @@
-package com.client.bluehock.gamesdk.ble
+package com.client.blekotsdk.ble
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -16,33 +16,35 @@ import android.bluetooth.le.BluetoothLeAdvertiser
 import android.content.Context
 import android.os.Build
 import android.os.ParcelUuid
-import com.client.bluehock.gamesdk.model.GameConstants
-import com.client.bluehock.gamesdk.protocol.GameProtocol
+import com.client.blekotsdk.logging.SdkLog
+import com.client.blekotsdk.model.BleConstants
+import com.client.blekotsdk.model.BleSdkError
+import com.client.blekotsdk.model.GattServiceProfile
 import java.util.UUID
 
 /**
- * Hosts the Air Hockey GATT service and advertises it so clients can join.
+ * App-agnostic GATT peripheral. Hosts a [GattServiceProfile], advertises it so
+ * clients can connect, and pushes notifications to subscribed centrals.
  *
- * Exposes:
- *  - INPUT char: client paddle input (write, no response)
- *  - CONTROL char: client control messages (write + notify)
- *  - STATE char: authoritative state snapshots (notify)
+ * Domain logic (protocol parsing) lives outside this class: incoming writes
+ * are forwarded raw via [onWrite] and subscriptions via [onSubscribe].
  */
-class GameGattServer(
+class BleGattServer(
     private val context: Context,
-    private val onInput: (Float, Float, Float) -> Unit,
-    private val onControl: (Byte) -> Unit,
-    private val onConnectionChange: (Boolean) -> Unit,
-    private val onClientReady: () -> Unit,
-    private val onError: (String) -> Unit
+    private val profile: GattServiceProfile,
+    private val onWrite: (characteristicUuid: UUID, value: ByteArray) -> Unit,
+    private val onConnectionChanged: (Boolean) -> Unit,
+    private val onSubscribe: (characteristicUuid: UUID, subscribed: Boolean) -> Unit,
+    private val onError: (BleSdkError) -> Unit
 ) {
+
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private var gattServer: BluetoothGattServer? = null
     private var advertiser: BluetoothLeAdvertiser? = null
     private var advertising = false
 
     private var connectedDevice: BluetoothDevice? = null
-    private var stateSubscribed = false
+    private val subscribedCharacteristics = mutableSetOf<UUID>()
 
     private val advertiseCallback = object : AdvertiseCallback() {
         override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
@@ -51,7 +53,7 @@ class GameGattServer(
 
         override fun onStartFailure(errorCode: Int) {
             advertising = false
-            onError("Advertising failed with code $errorCode")
+            onError(BleSdkError.GenericBleError(errorCode, "Advertising failed with code $errorCode"))
         }
     }
 
@@ -59,12 +61,12 @@ class GameGattServer(
         override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 connectedDevice = device
-                onConnectionChange(true)
+                onConnectionChanged(true)
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 if (connectedDevice?.address == device.address) {
                     connectedDevice = null
-                    stateSubscribed = false
-                    onConnectionChange(false)
+                    subscribedCharacteristics.clear()
+                    onConnectionChanged(false)
                 }
             }
         }
@@ -79,26 +81,9 @@ class GameGattServer(
             value: ByteArray
         ) {
             if (responseNeeded) {
-                try {
-                    gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null)
-                } catch (_: SecurityException) {
-                    // Ignore.
-                }
+                sendResponse(device, requestId, offset)
             }
-
-            when (characteristic.uuid) {
-                GameConstants.INPUT_CHAR_UUID -> {
-                    try {
-                        val input = GameProtocol.decodeInput(value)
-                        onInput(input.first, input.second, input.third)
-                    } catch (_: Exception) {
-                        onError("Malformed paddle input received.")
-                    }
-                }
-                GameConstants.CONTROL_CHAR_UUID -> {
-                    GameProtocol.decodeControl(value)?.let { onControl(it) }
-                }
-            }
+            onWrite(characteristic.uuid, value)
         }
 
         override fun onDescriptorWriteRequest(
@@ -110,75 +95,69 @@ class GameGattServer(
             offset: Int,
             value: ByteArray
         ) {
-            if (descriptor.uuid == GameConstants.CCCD_DESCRIPTOR_UUID &&
-                descriptor.characteristic.uuid == GameConstants.STATE_CHAR_UUID
-            ) {
+            if (descriptor.uuid == BleConstants.CCCD_DESCRIPTOR_UUID) {
+                val characteristicUuid = descriptor.characteristic.uuid
                 val subscribed = value.isNotEmpty() && value[0].toInt() != 0
-                stateSubscribed = subscribed
                 if (subscribed) {
-                    onClientReady()
+                    subscribedCharacteristics.add(characteristicUuid)
+                } else {
+                    subscribedCharacteristics.remove(characteristicUuid)
                 }
+                onSubscribe(characteristicUuid, subscribed)
             }
 
             if (responseNeeded) {
-                try {
-                    gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null)
-                } catch (_: SecurityException) {
-                    // Ignore.
-                }
+                sendResponse(device, requestId, offset)
             }
         }
     }
 
+    private fun sendResponse(device: BluetoothDevice, requestId: Int, offset: Int) {
+        try {
+            gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null)
+        } catch (_: SecurityException) {
+            // Ignore.
+        }
+    }
+
     /**
-     * Opens the GATT server, registers the game service and starts advertising.
+     * Opens the GATT server, registers the profile's service and starts
+     * advertising it.
      */
     fun start() {
         gattServer = try {
             bluetoothManager.openGattServer(context, callback)
         } catch (e: SecurityException) {
-            onError("SecurityException opening GATT server.")
+            onError(BleSdkError.PermissionDenied)
             null
         } ?: run {
-            onError("Failed to open GATT server. Bluetooth may be off.")
+            onError(BleSdkError.GenericBleError(-1, "Failed to open GATT server. Bluetooth may be off."))
             null
         }
 
         val server = gattServer
         if (server != null) {
             val service = BluetoothGattService(
-                GameConstants.GAME_SERVICE_UUID,
+                profile.serviceUuid,
                 BluetoothGattService.SERVICE_TYPE_PRIMARY
             )
 
-            val inputChar = BluetoothGattCharacteristic(
-                GameConstants.INPUT_CHAR_UUID,
-                BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE or BluetoothGattCharacteristic.PROPERTY_WRITE,
-                BluetoothGattCharacteristic.PERMISSION_WRITE
-            )
-
-            val controlChar = BluetoothGattCharacteristic(
-                GameConstants.CONTROL_CHAR_UUID,
-                BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-                BluetoothGattCharacteristic.PERMISSION_WRITE
-            )
-            controlChar.addDescriptor(cccdDescriptor())
-
-            val stateChar = BluetoothGattCharacteristic(
-                GameConstants.STATE_CHAR_UUID,
-                BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-                0
-            )
-            stateChar.addDescriptor(cccdDescriptor())
-
-            service.addCharacteristic(inputChar)
-            service.addCharacteristic(controlChar)
-            service.addCharacteristic(stateChar)
+            profile.characteristics.forEach { definition ->
+                val characteristic = BluetoothGattCharacteristic(
+                    definition.uuid,
+                    definition.properties,
+                    definition.permission
+                )
+                if (definition.withCccd) {
+                    characteristic.addDescriptor(cccdDescriptor())
+                }
+                service.addCharacteristic(characteristic)
+            }
 
             try {
                 server.addService(service)
             } catch (e: SecurityException) {
-                onError("SecurityException adding game service.")
+                onError(BleSdkError.PermissionDenied)
             }
         }
 
@@ -187,19 +166,20 @@ class GameGattServer(
 
     private fun cccdDescriptor(): BluetoothGattDescriptor =
         BluetoothGattDescriptor(
-            GameConstants.CCCD_DESCRIPTOR_UUID,
+            BleConstants.CCCD_DESCRIPTOR_UUID,
             BluetoothGattDescriptor.PERMISSION_WRITE or BluetoothGattDescriptor.PERMISSION_READ
         )
 
     /**
-     * Pushes a state snapshot to the connected client if notifications are on.
+     * Pushes [data] to the connected central if it subscribed to
+     * [characteristicUuid].
      */
-    fun notifyState(data: ByteArray) {
+    fun notify(characteristicUuid: UUID, data: ByteArray) {
         val device = connectedDevice ?: return
-        if (!stateSubscribed) return
+        if (characteristicUuid !in subscribedCharacteristics) return
         val server = gattServer ?: return
-        val characteristic = server.getService(GameConstants.GAME_SERVICE_UUID)
-            ?.getCharacteristic(GameConstants.STATE_CHAR_UUID) ?: return
+        val characteristic = server.getService(profile.serviceUuid)
+            ?.getCharacteristic(characteristicUuid) ?: return
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -211,14 +191,14 @@ class GameGattServer(
                 server.notifyCharacteristicChanged(device, characteristic, false)
             }
         } catch (e: SecurityException) {
-            onError("SecurityException notifying state.")
+            onError(BleSdkError.PermissionDenied)
         }
     }
 
     private fun startAdvertising() {
         val adapter = bluetoothManager.adapter ?: return
         if (adapter.isMultipleAdvertisementSupported == false) {
-            onError("BLE advertising is not supported on this device.")
+            onError(BleSdkError.GenericBleError(-1, "BLE advertising is not supported on this device."))
             return
         }
         advertiser = adapter.bluetoothLeAdvertiser ?: return
@@ -231,13 +211,13 @@ class GameGattServer(
 
         val data = AdvertiseData.Builder()
             .setIncludeDeviceName(true)
-            .addServiceUuid(ParcelUuid(GameConstants.GAME_SERVICE_UUID))
+            .addServiceUuid(ParcelUuid(profile.serviceUuid))
             .build()
 
         try {
             advertiser?.startAdvertising(settings, data, advertiseCallback)
         } catch (e: SecurityException) {
-            onError("SecurityException starting advertising.")
+            onError(BleSdkError.PermissionDenied)
         }
     }
 
@@ -252,6 +232,9 @@ class GameGattServer(
         advertiser = null
     }
 
+    /**
+     * Stops advertising and closes the GATT server.
+     */
     fun stop() {
         stopAdvertising()
         try {
@@ -261,9 +244,12 @@ class GameGattServer(
         }
         gattServer = null
         connectedDevice = null
-        stateSubscribed = false
+        subscribedCharacteristics.clear()
     }
 
+    /**
+     * Stops advertising without closing the server.
+     */
     fun stopAdvertisingOnly() {
         stopAdvertising()
     }

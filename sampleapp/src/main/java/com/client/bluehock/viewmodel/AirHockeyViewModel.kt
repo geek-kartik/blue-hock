@@ -3,10 +3,10 @@ package com.client.bluehock.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.client.bluehock.gamesdk.GameSdk
-import com.client.bluehock.gamesdk.model.AirHockeyState
-import com.client.bluehock.gamesdk.model.GameConnectionState
-import com.client.bluehock.gamesdk.model.GameDeviceInfo
+import com.client.blekotsdk.game.api.GameSdk
+import com.client.blekotsdk.game.model.AirHockeyState
+import com.client.blekotsdk.game.model.GameConnectionState
+import com.client.blekotsdk.game.model.GameDeviceInfo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

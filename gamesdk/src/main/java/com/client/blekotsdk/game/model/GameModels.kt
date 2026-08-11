@@ -1,4 +1,4 @@
-package com.client.bluehock.gamesdk.model
+package com.client.blekotsdk.game.model
 
 /**
  * Role of this device in the current BLE game session.

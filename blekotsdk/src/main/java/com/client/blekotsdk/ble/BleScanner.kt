@@ -1,4 +1,4 @@
-package com.client.bluehock.gamesdk.ble
+package com.client.blekotsdk.ble
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -12,19 +12,23 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.ParcelUuid
 import androidx.core.content.ContextCompat
-import com.client.bluehock.gamesdk.model.GameConstants
-import com.client.bluehock.gamesdk.model.GameDeviceInfo
+import com.client.blekotsdk.logging.SdkLog
+import com.client.blekotsdk.model.BleDevice
+import com.client.blekotsdk.model.BleSdkError
+import java.util.UUID
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
 /**
- * Scans for devices advertising the Air Hockey GATT service.
+ * Scans for BLE peripherals, optionally filtered by an advertised service UUID.
  */
-class GameScanner(private val context: Context) {
+class BleScanner(private val context: Context) {
+
     private val bluetoothAdapter: BluetoothAdapter? =
         (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
 
+    /** Checks whether the Bluetooth permissions required for scanning are granted. */
     fun hasPermissions(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
@@ -34,18 +38,26 @@ class GameScanner(private val context: Context) {
         }
     }
 
+    /** Checks whether Bluetooth is currently enabled on the device. */
     fun isBluetoothEnabled(): Boolean {
         return bluetoothAdapter?.isEnabled == true
     }
 
-    fun startScan(): Flow<GameDeviceInfo> = callbackFlow {
+    /**
+     * Emits discovered devices matching [serviceUuid], or all devices when
+     * [serviceUuid] is null.
+     *
+     * Throws [IllegalStateException] when permissions are missing, Bluetooth is
+     * off, or no LE scanner is available. The flow closes with a [BleSdkError]
+     * when scanning fails mid-scan.
+     */
+    fun startScan(serviceUuid: UUID? = null): Flow<BleDevice> = callbackFlow {
         if (!hasPermissions()) {
             throw IllegalStateException("Bluetooth permissions are not granted.")
         }
         if (!isBluetoothEnabled()) {
             throw IllegalStateException("Bluetooth is disabled.")
         }
-
         val scanner = bluetoothAdapter?.bluetoothLeScanner
             ?: throw IllegalStateException("BluetoothLeScanner is not available.")
 
@@ -61,24 +73,32 @@ class GameScanner(private val context: Context) {
                 } catch (_: SecurityException) {
                     return@onScanResult
                 }
-                trySend(GameDeviceInfo(name, address))
+                trySend(BleDevice(name, address))
+            }
+
+            override fun onScanFailed(errorCode: Int) {
+                SdkLog.e("BleScanner", "Scan failed: $errorCode")
+                close(BleSdkError.GenericBleError(errorCode, "Scan failed with code $errorCode"))
             }
         }
 
-        val filter = ScanFilter.Builder()
-            .setServiceUuid(ParcelUuid(GameConstants.GAME_SERVICE_UUID))
-            .build()
+        val filterBuilder = ScanFilter.Builder()
+        if (serviceUuid != null) {
+            filterBuilder.setServiceUuid(ParcelUuid(serviceUuid))
+        }
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
 
+        SdkLog.i("BleScanner", "Starting BLE scan${serviceUuid?.let { " for $it" } ?: ""}...")
         try {
-            scanner.startScan(listOf(filter), settings, scanCallback)
+            scanner.startScan(listOf(filterBuilder.build()), settings, scanCallback)
         } catch (e: SecurityException) {
             throw IllegalStateException("Bluetooth permissions are not granted.", e)
         }
 
         awaitClose {
+            SdkLog.i("BleScanner", "Stopping BLE scan due to flow closure.")
             try {
                 if (hasPermissions() && isBluetoothEnabled()) {
                     scanner.stopScan(scanCallback)

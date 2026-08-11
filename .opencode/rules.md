@@ -8,8 +8,8 @@ Hard rules for working in this repository. Follow these in addition to
 - Keep the SDK/UI split intact. Never add Compose/Android-UI code to `gamesdk`;
   never reach from `sampleapp` into `gamesdk` internals except via `GameSdk`.
 - Package names are fixed: `com.client.bluehock` (app) and
-  `com.client.bluehock.gamesdk` (SDK). Do not rename without an explicit
-  request.
+  `com.client.blekotsdk` (BLE core) and `com.client.blekotsdk.game`
+  (game SDK). Do not rename without an explicit request.
 - Gameplay constants live in `GameConstants`, physics in `AirHockeyEngine`, and
   wire encoding in `GameProtocol`. Do not duplicate these values in the UI.
 

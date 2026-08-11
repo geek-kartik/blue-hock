@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.client.bluehock.gamesdk.model.AirHockeyState
+import com.client.blekotsdk.game.model.AirHockeyState
 import com.client.bluehock.ui.board.ClientPaddle
 import com.client.bluehock.ui.board.HostPaddle
 

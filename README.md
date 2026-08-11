@@ -6,18 +6,30 @@ A two-player **Air Hockey** game played between two Android devices over Bluetoo
 
 ## 1. Project Architecture
 
-Clean multi-module setup separating the reusable game SDK from the Compose app:
+Clean multi-module setup built on a **layered, reusable BLE SDK**: a generic
+core library any BLE app can use, a thin game-specific layer on top of it, and
+the Compose app:
 
 ```mermaid
 graph TD
     A["sampleapp (Game UI - Compose)"] -->|"Depends on"| B["gamesdk (Air Hockey SDK)"]
+    B -->|"Depends on"| C["blekotsdk (Generic BLE core)"]
 ```
 
 ### Module Structure
 
-*   `gamesdk/` (Public Android Library, package `com.client.bluehock.gamesdk`):
+*   `blekotsdk/` (Public Android Library, package `com.client.blekotsdk`): a
+    generic, app-agnostic BLE SDK for advertising, scanning, connecting and
+    exchanging GATT data.
+    *   **api/**: Public entry point (`BleKotSdk`) — `initialize()`, `startScan(serviceUuid)`, `newConnection()`, `newServer()`.
+    *   **ble/**: `BleScanner` (scan with optional service filter), `BleConnection` (GATT client: connect, MTU, read/write, notifications), `BleGattServer` (profile-driven GATT server with per-characteristic subscription tracking).
+    *   **model/**: `BleDevice`, `ConnectionState`, `BleSdkError`, `BleConstants`, `GattServiceProfile` (declarative characteristic/factory DSL).
+    *   **logging/**: `Logger`, `SdkLog`, `AndroidLogLogger` — pluggable logging.
+*   `gamesdk/` (Public Android Library, package `com.client.blekotsdk.game`):
+    Air Hockey implemented as a thin domain layer over `blekotsdk`.
     *   **api/**: Public entry point (`GameSdk`) — `hostGame()`, `startScan()`, `connect()`, `sendPaddle()`, `restart()`, `observeState()`, `observeConnection()`, `observeErrors()`.
-    *   **ble/**: `GameGattServer` (advertises + hosts the GATT service), `GameGattClient` (connects, subscribes to state snapshots, sends throttled paddle input), `GameScanner`.
+    *   **session/**: `GameSession` — internal orchestration; hosts/joins, owns the engine and BLE adapters.
+    *   **ble/**: `GameGattProfile` (game service UUIDs), `GameBleServer`, `GameBleClient`, `GameScanner`.
     *   **engine/**: `AirHockeyEngine` — deterministic 120&nbsp;Hz physics simulation (paddle momentum, wall bounces, goal detection).
     *   **protocol/**: `GameProtocol` — compact little-endian binary (de)serialization for state snapshots, paddle input and control messages.
     *   **model/**: `GameConstants`, `GameRole`, `GamePhase`, `GameConnectionState`, `GameDeviceInfo`, `AirHockeyState`.

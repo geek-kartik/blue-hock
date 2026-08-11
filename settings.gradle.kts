@@ -23,6 +23,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "bluehock"
+include(":blekotsdk")
 include(":gamesdk")
 include(":sampleapp")
  

@@ -1,35 +1,12 @@
-package com.client.bluehock.gamesdk.model
-
-import java.util.UUID
+package com.client.blekotsdk.game.model
 
 /**
- * Constants for the Air Hockey BLE GATT service, protocol and gameplay rules.
+ * Constants for the Air Hockey gameplay rules and control protocol.
+ *
+ * GATT service/characteristic UUIDs live in
+ * [com.client.blekotsdk.game.ble.GameGattProfile].
  */
 object GameConstants {
-    /**
-     * Custom Air Hockey GATT Service (0xA011).
-     */
-    val GAME_SERVICE_UUID: UUID = UUID.fromString("0000a011-0000-1000-8000-00805f9b34fb")
-
-    /**
-     * Client -> Host paddle input characteristic (Write No Response).
-     */
-    val INPUT_CHAR_UUID: UUID = UUID.fromString("0000a012-0000-1000-8000-00805f9b34fb")
-
-    /**
-     * Host -> Client state snapshot characteristic (Notify).
-     */
-    val STATE_CHAR_UUID: UUID = UUID.fromString("0000a013-0000-1000-8000-00805f9b34fb")
-
-    /**
-     * Client -> Host control messages (Ready / Restart), Notify enabled.
-     */
-    val CONTROL_CHAR_UUID: UUID = UUID.fromString("0000a014-0000-1000-8000-00805f9b34fb")
-
-    /**
-     * Client Characteristic Configuration Descriptor.
-     */
-    val CCCD_DESCRIPTOR_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
     // Board geometry in logical units (scaled to any screen).
     const val BOARD_WIDTH = 80f

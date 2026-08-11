@@ -1,8 +1,8 @@
-package com.client.bluehock.gamesdk.protocol
+package com.client.blekotsdk.game.protocol
 
-import com.client.bluehock.gamesdk.model.AirHockeyState
-import com.client.bluehock.gamesdk.model.GameConstants
-import com.client.bluehock.gamesdk.model.GamePhase
+import com.client.blekotsdk.game.model.AirHockeyState
+import com.client.blekotsdk.game.model.GameConstants
+import com.client.blekotsdk.game.model.GamePhase
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.roundToInt

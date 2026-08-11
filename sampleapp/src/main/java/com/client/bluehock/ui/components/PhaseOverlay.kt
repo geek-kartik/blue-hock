@@ -23,8 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.client.bluehock.gamesdk.model.AirHockeyState
-import com.client.bluehock.gamesdk.model.GamePhase
+import com.client.blekotsdk.game.model.AirHockeyState
+import com.client.blekotsdk.game.model.GamePhase
 
 /**
  * Overlays contextual UI on top of the board depending on the game phase:

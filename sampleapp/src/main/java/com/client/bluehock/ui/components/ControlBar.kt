@@ -21,9 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.client.bluehock.gamesdk.model.AirHockeyState
-import com.client.bluehock.gamesdk.model.GameConnectionState
-import com.client.bluehock.gamesdk.model.GameDeviceInfo
+import com.client.blekotsdk.game.model.AirHockeyState
+import com.client.blekotsdk.game.model.GameConnectionState
+import com.client.blekotsdk.game.model.GameDeviceInfo
 
 /**
  * Connection controls: host / find / join / disconnect plus the discovered

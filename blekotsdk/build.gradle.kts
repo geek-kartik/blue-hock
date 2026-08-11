@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.client.blekotsdk.game"
+    namespace = "com.client.blekotsdk"
     compileSdk = 37
 
     defaultConfig {
@@ -27,8 +27,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":blekotsdk"))
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

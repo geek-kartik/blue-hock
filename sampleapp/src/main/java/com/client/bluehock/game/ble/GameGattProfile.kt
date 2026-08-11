@@ -1,6 +1,6 @@
-package com.client.blekotsdk.game.ble
+package com.client.bluehock.game.ble
 
-import com.client.blekotsdk.game.model.GameConstants
+import com.client.bluehock.game.model.GameConstants
 import com.client.blekotsdk.model.GattCharacteristic
 import com.client.blekotsdk.model.GattServiceProfile
 import java.util.UUID
@@ -11,7 +11,7 @@ import java.util.UUID
  * and [com.client.blekotsdk.ble.BleConnection] can host / connect without
  * any game-specific logic.
  */
-object GameGattProfile {
+internal object GameGattProfile {
 
     /**
      * Custom Air Hockey GATT Service (0xA011).

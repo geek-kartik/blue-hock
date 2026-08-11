@@ -1,7 +1,7 @@
-package com.client.blekotsdk.game.ble
+package com.client.bluehock.game.ble
 
 import com.client.blekotsdk.api.BleKotSdk
-import com.client.blekotsdk.game.protocol.GameProtocol
+import com.client.bluehock.game.protocol.GameProtocol
 
 /**
  * Hosts the Air Hockey GATT service and advertises it so clients can join.
@@ -11,7 +11,7 @@ import com.client.blekotsdk.game.protocol.GameProtocol
  *  - CONTROL char: client control messages (write + notify)
  *  - STATE char: authoritative state snapshots (notify)
  */
-class GameBleServer(
+internal class GameBleServer(
     private val onInput: (Float, Float, Float) -> Unit,
     private val onControl: (Byte) -> Unit,
     private val onConnectionChange: (Boolean) -> Unit,

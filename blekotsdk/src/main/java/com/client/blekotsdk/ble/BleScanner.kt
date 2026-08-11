@@ -19,6 +19,7 @@ import java.util.UUID
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.scan
 
 /**
  * Scans for BLE peripherals, optionally filtered by an advertised service UUID.
@@ -108,4 +109,18 @@ class BleScanner(private val context: Context) {
             }
         }
     }
+
+    /**
+     * Scans for peripherals matching [serviceUuid], or all devices when null,
+     * and emits the cumulative list of unique devices discovered so far,
+     * keyed by MAC address.
+     *
+     * Distinct from [startScan], which emits each raw [BleDevice] as it is
+     * found. Shares the same preconditions and failure behaviour.
+     */
+    fun scanDevices(serviceUuid: UUID? = null): Flow<List<BleDevice>> =
+        startScan(serviceUuid)
+            .scan(emptyList<BleDevice>()) { acc, device ->
+                if (acc.any { it.address == device.address }) acc else acc + device
+            }
 }

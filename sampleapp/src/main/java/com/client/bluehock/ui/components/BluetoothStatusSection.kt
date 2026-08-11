@@ -18,6 +18,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.client.blekotsdk.api.BleKotSdk
 import com.client.bluehock.bluetooth.BluetoothController
 
 /**
@@ -42,10 +45,25 @@ import com.client.bluehock.bluetooth.BluetoothController
 @Composable
 internal fun BluetoothStatusSection() {
     val context = LocalContext.current
-    val controller = remember { BluetoothController(context) }
-    var btOn by remember { mutableStateOf(controller.isEnabled) }
     var showTetheringDialog by remember { mutableStateOf(false) }
     var turnOnFailed by remember { mutableStateOf(false) }
+
+    val enableBluetoothLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { /* Bluetooth state is observed via the broadcast receiver below. */ }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        if (result.values.all { granted -> granted }) {
+            BleKotSdk.requestEnableBluetooth(enableBluetoothLauncher)
+        } else {
+            turnOnFailed = true
+        }
+    }
+
+    val controller = remember { BluetoothController(permissionLauncher, enableBluetoothLauncher) }
+    var btOn by remember { mutableStateOf(controller.isEnabled) }
 
     DisposableEffect(controller) {
         val receiver = object : BroadcastReceiver() {

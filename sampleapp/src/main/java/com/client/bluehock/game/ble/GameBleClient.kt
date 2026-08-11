@@ -1,9 +1,9 @@
-package com.client.blekotsdk.game.ble
+package com.client.bluehock.game.ble
 
 import android.bluetooth.BluetoothGattCharacteristic
 import com.client.blekotsdk.api.BleKotSdk
-import com.client.blekotsdk.game.model.AirHockeyState
-import com.client.blekotsdk.game.protocol.GameProtocol
+import com.client.bluehock.game.model.AirHockeyState
+import com.client.bluehock.game.protocol.GameProtocol
 import com.client.blekotsdk.model.ConnectionState
 import java.util.UUID
 
@@ -11,7 +11,7 @@ import java.util.UUID
  * GATT client that connects to a game host, streams state snapshots via
  * notifications and sends paddle input / control messages upstream.
  */
-class GameBleClient(
+internal class GameBleClient(
     private val onState: (AirHockeyState) -> Unit,
     private val onConnectionChange: (Boolean) -> Unit,
     private val onError: (String) -> Unit

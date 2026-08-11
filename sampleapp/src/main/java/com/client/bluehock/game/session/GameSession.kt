@@ -1,18 +1,18 @@
-package com.client.blekotsdk.game.session
+package com.client.bluehock.game.session
 
 import android.content.Context
 import com.client.blekotsdk.api.BleKotSdk
-import com.client.blekotsdk.game.ble.GameBleClient
-import com.client.blekotsdk.game.ble.GameBleServer
-import com.client.blekotsdk.game.ble.GameGattProfile
-import com.client.blekotsdk.game.ble.GameScanner
-import com.client.blekotsdk.game.engine.AirHockeyEngine
-import com.client.blekotsdk.game.model.AirHockeyState
-import com.client.blekotsdk.game.model.GameConnectionState
-import com.client.blekotsdk.game.model.GameConstants
-import com.client.blekotsdk.game.model.GameDeviceInfo
-import com.client.blekotsdk.game.model.GamePhase
-import com.client.blekotsdk.game.protocol.GameProtocol
+import com.client.bluehock.game.ble.GameBleClient
+import com.client.bluehock.game.ble.GameBleServer
+import com.client.bluehock.game.ble.GameGattProfile
+import com.client.bluehock.game.ble.GameScanner
+import com.client.bluehock.game.engine.AirHockeyEngine
+import com.client.bluehock.game.model.AirHockeyState
+import com.client.bluehock.game.model.GameConnectionState
+import com.client.bluehock.game.model.GameConstants
+import com.client.bluehock.game.model.GameDeviceInfo
+import com.client.bluehock.game.model.GamePhase
+import com.client.bluehock.game.protocol.GameProtocol
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -33,7 +33,7 @@ import kotlin.math.ceil
  * remote host, streams [AirHockeyState] snapshots to the UI and translates
  * paddle input into GATT writes.
  */
-class GameSession(private val context: Context) {
+internal class GameSession(private val context: Context) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val engine = AirHockeyEngine()
@@ -243,7 +243,7 @@ class GameSession(private val context: Context) {
 
     // ----- Client mode -----------------------------------------------------
 
-    fun startScan(): Flow<GameDeviceInfo> {
+    fun startScan(): Flow<List<GameDeviceInfo>> {
         val scanner = GameScanner()
         return scanner.startScan()
     }

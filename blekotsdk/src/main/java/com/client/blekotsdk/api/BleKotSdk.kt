@@ -1,9 +1,14 @@
 package com.client.blekotsdk.api
 
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
+import com.client.blekotsdk.ble.BleAdapter
 import com.client.blekotsdk.ble.BleConnection
 import com.client.blekotsdk.ble.BleGattServer
 import com.client.blekotsdk.ble.BleScanner
+import com.client.blekotsdk.permissions.BlePermissions
 import com.client.blekotsdk.model.BleDevice
 import com.client.blekotsdk.model.BleSdkError
 import com.client.blekotsdk.model.ConnectionState
@@ -53,6 +58,13 @@ object BleKotSdk {
         BleScanner(requireContext()).startScan(serviceUuid)
 
     /**
+     * Scans for devices advertising [serviceUuid], or all devices when null,
+     * and emits the cumulative list of unique devices discovered so far.
+     */
+    fun startScanCollecting(serviceUuid: UUID? = null): Flow<List<BleDevice>> =
+        BleScanner(requireContext()).scanDevices(serviceUuid)
+
+    /**
      * Creates a GATT client connection for [onConnectionChanged],
      * [onNotification] and [onError] callbacks.
      */
@@ -74,4 +86,49 @@ object BleKotSdk {
         onError: (BleSdkError) -> Unit
     ): BleGattServer =
         BleGattServer(requireContext(), profile, onWrite, onConnectionChanged, onSubscribe, onError)
+
+    /**
+     * Runtime permissions required for BLE scan, connect and advertise on the
+     * current API level.
+     */
+    fun requiredBluetoothPermissions(): Array<String> = BlePermissions.requiredPermissions()
+
+    /**
+     * Whether all [requiredBluetoothPermissions] are already granted.
+     */
+    fun hasBluetoothPermissions(): Boolean = BlePermissions.hasPermissions(requireContext())
+
+    /**
+     * Launches the system runtime permission dialog for
+     * [requiredBluetoothPermissions].
+     */
+    fun requestBluetoothPermissions(launcher: ActivityResultLauncher<Array<String>>) {
+        launcher.launch(requiredBluetoothPermissions())
+    }
+
+    /**
+     * Whether this device has a Bluetooth radio.
+     */
+    fun isBluetoothSupported(): Boolean = BleAdapter(requireContext()).isSupported
+
+    /**
+     * Whether Bluetooth is currently enabled on the host device.
+     */
+    fun isBluetoothEnabled(): Boolean = BleAdapter(requireContext()).isEnabled
+
+    /**
+     * Shows the system "allow app to turn on Bluetooth?" consent dialog.
+     *
+     * This is the only way to enable Bluetooth from an app on Android 13+;
+     * the legacy [android.bluetooth.BluetoothAdapter.enable] is silently
+     * blocked there. Requires BLUETOOTH_CONNECT on Android 12+.
+     */
+    fun requestEnableBluetooth(launcher: ActivityResultLauncher<Intent>) {
+        launcher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+    }
+
+    /**
+     * Turns Bluetooth off directly. Best effort — restricted on Android 13+.
+     */
+    fun disableBluetooth(): Boolean = BleAdapter(requireContext()).disable()
 }

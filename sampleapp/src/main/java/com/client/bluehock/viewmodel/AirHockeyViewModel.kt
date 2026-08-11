@@ -3,10 +3,10 @@ package com.client.bluehock.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.client.blekotsdk.game.api.GameSdk
-import com.client.blekotsdk.game.model.AirHockeyState
-import com.client.blekotsdk.game.model.GameConnectionState
-import com.client.blekotsdk.game.model.GameDeviceInfo
+import com.client.bluehock.game.api.AirHockeyGame
+import com.client.bluehock.game.model.AirHockeyState
+import com.client.bluehock.game.model.GameConnectionState
+import com.client.bluehock.game.model.GameDeviceInfo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Bridges the Air Hockey Compose UI to the [GameSdk].
+ * Bridges the Air Hockey Compose UI to the [AirHockeyGame].
  */
 class AirHockeyViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -38,27 +38,27 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
     val myPaddle: StateFlow<Pair<Float, Float>?> = _myPaddle.asStateFlow()
 
     val isHost: Boolean
-        get() = GameSdk.isHost()
+        get() = AirHockeyGame.isHost()
 
     private var scanJob: Job? = null
 
     init {
-        GameSdk.initialize(getApplication())
+        AirHockeyGame.initialize(getApplication())
 
         viewModelScope.launch {
-            GameSdk.observeState().collect { _state.value = it }
+            AirHockeyGame.observeState().collect { _state.value = it }
         }
         viewModelScope.launch {
-            GameSdk.observeConnection().collect { _connection.value = it }
+            AirHockeyGame.observeConnection().collect { _connection.value = it }
         }
         viewModelScope.launch {
-            GameSdk.observeErrors().collect { error -> addLog("ERROR: $error") }
+            AirHockeyGame.observeErrors().collect { error -> addLog("ERROR: $error") }
         }
     }
 
     fun hostGame() {
         addLog("Hosting Air Hockey game...")
-        viewModelScope.launch { GameSdk.hostGame() }
+        viewModelScope.launch { AirHockeyGame.hostGame() }
     }
 
     fun startScan() {
@@ -69,12 +69,7 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
         scanJob?.cancel()
         scanJob = viewModelScope.launch {
             try {
-                GameSdk.startScan().collect { device ->
-                    val current = _devices.value
-                    if (current.none { it.address == device.address }) {
-                        _devices.value = current + device
-                    }
-                }
+                AirHockeyGame.startScan().collect { devices -> _devices.value = devices }
             } catch (e: Exception) {
                 addLog("Scan failed: ${e.message}")
             } finally {
@@ -85,7 +80,7 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun stopScan() {
         scanJob?.cancel()
-        GameSdk.stopScan()
+        AirHockeyGame.stopScan()
         _scanning.value = false
     }
 
@@ -94,7 +89,7 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
         addLog("Joining ${device.name ?: "host"} (${device.address})...")
         viewModelScope.launch {
             try {
-                GameSdk.connect(device)
+                AirHockeyGame.connect(device)
             } catch (e: Exception) {
                 addLog("Connect failed: ${e.message}")
             }
@@ -103,7 +98,7 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun disconnect() {
         _myPaddle.value = null
-        viewModelScope.launch { GameSdk.disconnect() }
+        viewModelScope.launch { AirHockeyGame.disconnect() }
     }
 
     /**
@@ -111,14 +106,14 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
      * the current touch pressure.
      */
     fun onDrag(x: Float, y: Float, pressure: Float = 0f) {
-        val (clampedX, clampedY) = GameSdk.clampOwnPaddle(x, y)
+        val (clampedX, clampedY) = AirHockeyGame.clampOwnPaddle(x, y)
         _myPaddle.value = clampedX to clampedY
-        GameSdk.sendPaddle(clampedX, clampedY, pressure)
+        AirHockeyGame.sendPaddle(clampedX, clampedY, pressure)
     }
 
     fun restart() {
         addLog("Restarting match...")
-        viewModelScope.launch { GameSdk.restart() }
+        viewModelScope.launch { AirHockeyGame.restart() }
     }
 
     private fun addLog(message: String) {

@@ -35,7 +35,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":gamesdk"))
+    implementation(project(":blekotsdk"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

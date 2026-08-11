@@ -1,8 +1,8 @@
-package com.client.blekotsdk.game.protocol
+package com.client.bluehock.game.protocol
 
-import com.client.blekotsdk.game.model.AirHockeyState
-import com.client.blekotsdk.game.model.GameConstants
-import com.client.blekotsdk.game.model.GamePhase
+import com.client.bluehock.game.model.AirHockeyState
+import com.client.bluehock.game.model.GameConstants
+import com.client.bluehock.game.model.GamePhase
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.roundToInt
@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
  *
  * All messages are little-endian.
  */
-object GameProtocol {
+internal object GameProtocol {
 
     /**
      * Paddle input message: 3 x short (x/y scaled by 10, pressure scaled by

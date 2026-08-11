@@ -17,10 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.client.blekotsdk.game.model.GameConstants
+import com.client.bluehock.game.model.GameConstants
 import com.client.bluehock.ui.board.AirHockeyBoard
 import com.client.bluehock.ui.components.BluetoothStatusSection
 import com.client.bluehock.ui.components.ControlBar
+import com.client.bluehock.ui.components.DeviceListDialog
 import com.client.bluehock.ui.components.PhaseOverlay
 import com.client.bluehock.ui.components.ScoreHeader
 import com.client.bluehock.viewmodel.AirHockeyViewModel
@@ -54,14 +55,10 @@ fun AirHockeyScreen(viewModel: AirHockeyViewModel) {
 
         ControlBar(
             connection = connection,
-            scanning = scanning,
-            devices = devices,
             isHost = isHost,
             state = state,
             onHost = viewModel::hostGame,
             onScan = viewModel::startScan,
-            onStopScan = viewModel::stopScan,
-            onConnect = viewModel::connect,
             onDisconnect = viewModel::disconnect
         )
 
@@ -102,5 +99,13 @@ fun AirHockeyScreen(viewModel: AirHockeyViewModel) {
                 maxLines = 1
             )
         }
+    }
+
+    if (scanning) {
+        DeviceListDialog(
+            devices = devices,
+            onJoin = viewModel::connect,
+            onDismiss = viewModel::stopScan
+        )
     }
 }

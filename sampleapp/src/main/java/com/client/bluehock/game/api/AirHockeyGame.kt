@@ -1,20 +1,20 @@
-package com.client.blekotsdk.game.api
+package com.client.bluehock.game.api
 
 import android.content.Context
-import com.client.blekotsdk.game.model.AirHockeyState
-import com.client.blekotsdk.game.model.GameConnectionState
-import com.client.blekotsdk.game.model.GameDeviceInfo
-import com.client.blekotsdk.game.session.GameSession
+import com.client.bluehock.game.model.AirHockeyState
+import com.client.bluehock.game.model.GameConnectionState
+import com.client.bluehock.game.model.GameDeviceInfo
+import com.client.bluehock.game.session.GameSession
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Public entry point for the Air Hockey over BLE SDK.
+ * Public entry point for the Air Hockey domain layer.
  *
  * Two devices play against each other: one hosts the game (runs the
  * authoritative simulation and GATT server), the other joins by scanning,
  * connecting and streaming state snapshots.
  *
- * Game rule: play until [com.client.blekotsdk.game.model.GameConstants.TOTAL_GOALS]
+ * Game rule: play until [com.client.bluehock.game.model.GameConstants.TOTAL_GOALS]
  * goals are scored in total. The player with the most goals wins and the
  * match can be restarted.
  *
@@ -22,13 +22,13 @@ import kotlinx.coroutines.flow.Flow
  *  - Host: [hostGame], then listen on [observeState].
  *  - Client: [startScan] -> [connect] -> [sendPaddle].
  */
-object GameSdk {
+internal object AirHockeyGame {
 
     private var session: GameSession? = null
 
     /**
-     * Bootstraps the SDK. Call once, e.g. in Application.onCreate or before
-     * hosting/joining.
+     * Bootstraps the domain layer. Call once, e.g. in Application.onCreate or
+     * before hosting/joining.
      */
     fun initialize(context: Context) {
         if (session == null) {
@@ -37,7 +37,7 @@ object GameSdk {
     }
 
     private fun requireSession(): GameSession =
-        session ?: throw IllegalStateException("GameSdk.initialize(context) must be called first.")
+        session ?: throw IllegalStateException("AirHockeyGame.initialize(context) must be called first.")
 
     /**
      * Whether this device is the host (Player 1, bottom paddle).
@@ -52,9 +52,10 @@ object GameSdk {
     }
 
     /**
-     * Scans for devices advertising the Air Hockey service.
+     * Scans for devices advertising the Air Hockey service and emits the
+     * cumulative list of hosts discovered so far.
      */
-    fun startScan(): Flow<GameDeviceInfo> = requireSession().startScan()
+    fun startScan(): Flow<List<GameDeviceInfo>> = requireSession().startScan()
 
     /**
      * Stops the active scan.
@@ -108,7 +109,7 @@ object GameSdk {
     fun observeConnection(): Flow<GameConnectionState> = requireSession().connection
 
     /**
-     * Observes SDK errors surfaced to the UI.
+     * Observes domain errors surfaced to the UI.
      */
     fun observeErrors(): Flow<String> = requireSession().errors
 }

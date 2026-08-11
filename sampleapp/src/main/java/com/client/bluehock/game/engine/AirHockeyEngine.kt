@@ -1,6 +1,6 @@
-package com.client.blekotsdk.game.engine
+package com.client.bluehock.game.engine
 
-import com.client.blekotsdk.game.model.GameConstants
+import com.client.bluehock.game.model.GameConstants
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -13,7 +13,7 @@ import kotlin.math.sqrt
  * Player 2 (client) the top paddle. The top goal belongs to player 2, the
  * bottom goal to player 1.
  */
-class AirHockeyEngine {
+internal class AirHockeyEngine {
 
     companion object {
         fun clampHost(x: Float, y: Float): Pair<Float, Float> {

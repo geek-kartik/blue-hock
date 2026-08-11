@@ -6,14 +6,12 @@ A two-player **Air Hockey** game played between two Android devices over Bluetoo
 
 ## 1. Project Architecture
 
-Clean multi-module setup built on a **layered, reusable BLE SDK**: a generic
-core library any BLE app can use, a thin game-specific layer on top of it, and
-the Compose app:
+The repo is built around one **generic, reusable BLE core** (`blekotsdk`) plus
+a single app that implements Air Hockey on top of it as a UI-free domain layer:
 
 ```mermaid
 graph TD
-    A["sampleapp (Game UI - Compose)"] -->|"Depends on"| B["gamesdk (Air Hockey SDK)"]
-    B -->|"Depends on"| C["blekotsdk (Generic BLE core)"]
+    A["sampleapp (Air Hockey UI - Compose)"] -->|"Depends on"| B["blekotsdk (Generic BLE core)"]
 ```
 
 ### Module Structure
@@ -21,26 +19,25 @@ graph TD
 *   `blekotsdk/` (Public Android Library, package `com.client.blekotsdk`): a
     generic, app-agnostic BLE SDK for advertising, scanning, connecting and
     exchanging GATT data.
-    *   **api/**: Public entry point (`BleKotSdk`) — `initialize()`, `startScan(serviceUuid)`, `newConnection()`, `newServer()`.
-    *   **ble/**: `BleScanner` (scan with optional service filter), `BleConnection` (GATT client: connect, MTU, read/write, notifications), `BleGattServer` (profile-driven GATT server with per-characteristic subscription tracking).
+    *   **api/**: Public entry point (`BleKotSdk`) — `initialize()`, `startScan(serviceUuid)`, `startScanCollecting(serviceUuid)`, `newConnection()`, `newServer()`.
+    *   **ble/**: `BleScanner` (scan with optional service filter, stream or collected device list), `BleConnection` (GATT client: connect, MTU, read/write, notifications), `BleGattServer` (profile-driven GATT server with per-characteristic subscription tracking).
     *   **model/**: `BleDevice`, `ConnectionState`, `BleSdkError`, `BleConstants`, `GattServiceProfile` (declarative characteristic/factory DSL).
     *   **logging/**: `Logger`, `SdkLog`, `AndroidLogLogger` — pluggable logging.
-*   `gamesdk/` (Public Android Library, package `com.client.blekotsdk.game`):
-    Air Hockey implemented as a thin domain layer over `blekotsdk`.
-    *   **api/**: Public entry point (`GameSdk`) — `hostGame()`, `startScan()`, `connect()`, `sendPaddle()`, `restart()`, `observeState()`, `observeConnection()`, `observeErrors()`.
-    *   **session/**: `GameSession` — internal orchestration; hosts/joins, owns the engine and BLE adapters.
-    *   **ble/**: `GameGattProfile` (game service UUIDs), `GameBleServer`, `GameBleClient`, `GameScanner`.
-    *   **engine/**: `AirHockeyEngine` — deterministic 120&nbsp;Hz physics simulation (paddle momentum, wall bounces, goal detection).
-    *   **protocol/**: `GameProtocol` — compact little-endian binary (de)serialization for state snapshots, paddle input and control messages.
-    *   **model/**: `GameConstants`, `GameRole`, `GamePhase`, `GameConnectionState`, `GameDeviceInfo`, `AirHockeyState`.
 *   `sampleapp/` (Game App, package `com.client.bluehock`):
     *   `AirHockeyActivity` (launcher) handling BLE runtime permissions.
-    *   `AirHockeyViewModel` bridging the UI to `GameSdk`.
+    *   `AirHockeyViewModel` bridging the UI to the game domain.
+    *   **game/** (UI-free Air Hockey domain layer, package `com.client.bluehock.game`):
+        *   **api/**: `AirHockeyGame` — `hostGame()`, `startScan()` (discovered host list), `connect()`, `sendPaddle()`, `restart()`, `observeState()`, `observeConnection()`, `observeErrors()`.
+        *   **session/**: `GameSession` — internal orchestration; hosts/joins, owns the engine and BLE adapters.
+        *   **ble/**: `GameGattProfile` (game service UUIDs), `GameBleServer`, `GameBleClient`, `GameScanner`.
+        *   **engine/**: `AirHockeyEngine` — deterministic 120&nbsp;Hz physics simulation (paddle momentum, wall bounces, goal detection).
+        *   **protocol/**: `GameProtocol` — compact little-endian binary (de)serialization for state snapshots, paddle input and control messages.
+        *   **model/**: `GameConstants`, `GameRole`, `GamePhase`, `GameConnectionState`, `GameDeviceInfo`, `AirHockeyState`.
     *   **bluetooth/**: `BluetoothController` — reads the adapter state and enables/disables Bluetooth from inside the app (no settings redirect).
     *   **ui/** Jetpack Compose screen (scalable, feature-split layout):
         *   `AirHockeyScreen` — screen orchestration: Bluetooth strip, score header, board, phase overlays and connection controls.
         *   **board/**: `AirHockeyBoard` (drag input + per-frame canvas rendering), `BoardRenderer` (paddle / puck / goal-net drawing primitives), `BoardInterpolator` (snapshot smoothing), `BoardColors` (table and paddle palette).
-        *   **components/**: `BluetoothStatusSection` (in-app Bluetooth on/off + tethering guide), `ScoreHeader`, `PhaseOverlay` (waiting / countdown / winner), `ControlBar` (host / find / join / disconnect).
+        *   **components/**: `BluetoothStatusSection` (in-app Bluetooth on/off + tethering guide), `ScoreHeader`, `PhaseOverlay` (waiting / countdown / winner), `ControlBar` (host / find / disconnect), `DeviceListDialog` (discovered hosts to join).
         *   **theme/**: Material theme, typography and colors.
 
 ---
@@ -139,7 +136,7 @@ Install the produced APK:
 The SDK contains unit tests for the binary protocol (round-trip encoding) and the physics engine (goal detection and wall bounces):
 
 ```bash
-./gradlew :gamesdk:testDebugUnitTest
+./gradlew :sampleapp:testDebugUnitTest
 ```
 
 ---

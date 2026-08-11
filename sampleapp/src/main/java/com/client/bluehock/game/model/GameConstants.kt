@@ -1,10 +1,10 @@
-package com.client.blekotsdk.game.model
+package com.client.bluehock.game.model
 
 /**
  * Constants for the Air Hockey gameplay rules and control protocol.
  *
  * GATT service/characteristic UUIDs live in
- * [com.client.blekotsdk.game.ble.GameGattProfile].
+ * [com.client.bluehock.game.ble.GameGattProfile].
  */
 object GameConstants {
 

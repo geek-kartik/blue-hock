@@ -1,9 +1,11 @@
 package com.client.blekotsdk.ble
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
+import androidx.annotation.RequiresPermission
 
 /**
  * Thin wrapper around the platform Bluetooth adapter for reading the current
@@ -25,5 +27,6 @@ internal class BleAdapter(context: Context) {
     val isEnabled: Boolean
         get() = adapter?.isEnabled == true
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun disable(): Boolean = adapter?.disable() == true
 }

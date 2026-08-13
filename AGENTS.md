@@ -30,7 +30,7 @@ UI-free domain layer (`com.client.bluehock.game`) on top of it.
 
 ```
 ble-connect-game/
-├── settings.gradle.kts        # rootProject.name = "bluehock"; includes :blekotsdk, :sampleapp
+├── settings.gradle.kts        # rootProject.name = "bluehock"; includes :blekotsdk, :airhockapp
 ├── build.gradle.kts           # top-level plugin aliases only
 ├── gradle/libs.versions.toml  # version catalog (single source of dependency versions)
 ├── blekotsdk/                 # public Android library — generic, app-agnostic BLE SDK
@@ -42,7 +42,7 @@ ble-connect-game/
 │       │                      #   GattServiceProfile
 │       ├── permissions/       # BlePermissions — version-aware BLE runtime permissions
 │       └── logging/           # Logger, SdkLog, AndroidLogLogger
-└── sampleapp/                 # Android application (package com.client.bluehock)
+└── airhockapp/                # Android application (package com.client.bluehock)
     └── src/main/java/com/client/bluehock/
         ├── AirHockeyActivity.kt     # launcher; handles BLE runtime permissions
         ├── AirHockeyViewModel.kt    # bridges UI to AirHockeyGame via StateFlow
@@ -69,9 +69,9 @@ Run from the repository root (`./gradlew` wrapper):
 
 | Task | Command |
 | --- | --- |
-| Build the app APK | `./gradlew :sampleapp:assembleDebug` |
-| Install the app | `./gradlew :sampleapp:installDebug` |
-| Run unit tests (protocol + engine) | `./gradlew :sampleapp:testDebugUnitTest` |
+| Build the app APK | `./gradlew :airhockapp:assembleDebug` |
+| Install the app | `./gradlew :airhockapp:installDebug` |
+| Run unit tests (protocol + engine) | `./gradlew :airhockapp:testDebugUnitTest` |
 | Run all unit tests | `./gradlew testDebugUnitTest` |
 
 ## Key conventions
@@ -96,10 +96,10 @@ Run from the repository root (`./gradlew` wrapper):
   `requestBluetoothPermissions`, `requestEnableBluetooth`). The app calls these
   through `BluetoothController`.
 - **README Mermaid diagrams**: node/edge labels containing parentheses or
-  colons must be double-quoted (e.g. `A["sampleapp (Game UI)"]`) or GitHub's
+  colons must be double-quoted (e.g. `A["airhockapp (Game UI)"]`) or GitHub's
   renderer fails with "Unable to render rich display".
 - **Comments**: match the existing style — KDoc on public/internal classes and
   functions, brief comments only for non-obvious logic. Do not add noisy
   inline comments.
-- **Tests**: unit tests live in `sampleapp/src/test` mirroring the source
+- **Tests**: unit tests live in `airhockapp/src/test` mirroring the source
   packages.

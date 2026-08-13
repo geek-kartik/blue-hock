@@ -61,7 +61,7 @@ Hard rules for working in this repository. Follow these in addition to
 ## Docs
 
 - README Mermaid: double-quote any node/edge label containing `(`, `)`, or
-  `:`, e.g. `A["sampleapp (Game UI)"]`. Validate with `mermaid.parse` if in
+  `:`, e.g. `A["airhockapp (Game UI)"]`. Validate with `mermaid.parse` if in
   doubt — GitHub's renderer is strict.
 - When you add a module, package, or feature, update the layout/commands in
   `AGENTS.md` and the README module structure.
@@ -69,6 +69,6 @@ Hard rules for working in this repository. Follow these in addition to
 ## Verification
 
 - After changes, run the relevant tests: `./gradlew :blekotsdk:testDebugUnitTest`
-  for SDK logic, `./gradlew :sampleapp:testDebugUnitTest` for the game domain,
-  and `./gradlew :sampleapp:assembleDebug` for the app.
+  for SDK logic, `./gradlew :airhockapp:testDebugUnitTest` for the game domain,
+  and `./gradlew :airhockapp:assembleDebug` for the app.
 - Do not commit until the user asks.

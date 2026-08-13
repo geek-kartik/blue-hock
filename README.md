@@ -11,7 +11,7 @@ a single app that implements Air Hockey on top of it as a UI-free domain layer:
 
 ```mermaid
 graph TD
-    A["sampleapp (Air Hockey UI - Compose)"] -->|"Depends on"| B["blekotsdk (Generic BLE core)"]
+    A["airhockapp (Air Hockey UI - Compose)"] -->|"Depends on"| B["blekotsdk (Generic BLE core)"]
 ```
 
 ### Module Structure
@@ -23,7 +23,7 @@ graph TD
     *   **ble/**: `BleScanner` (scan with optional service filter, stream or collected device list), `BleConnection` (GATT client: connect, MTU, read/write, notifications), `BleGattServer` (profile-driven GATT server with per-characteristic subscription tracking).
     *   **model/**: `BleDevice`, `ConnectionState`, `BleSdkError`, `BleConstants`, `GattServiceProfile` (declarative characteristic/factory DSL).
     *   **logging/**: `Logger`, `SdkLog`, `AndroidLogLogger` — pluggable logging.
-*   `sampleapp/` (Game App, package `com.client.bluehock`):
+*   `airhockapp/` (Game App, package `com.client.bluehock`):
     *   `AirHockeyActivity` (launcher) handling BLE runtime permissions.
     *   `AirHockeyViewModel` bridging the UI to the game domain.
     *   **game/** (UI-free Air Hockey domain layer, package `com.client.bluehock.game`):
@@ -110,7 +110,7 @@ All messages are little-endian binary. The 22-byte state snapshot encodes the ga
 
 Requires **two Android devices** with Bluetooth (BLE).
 
-1. Build and install the **sampleapp** on both devices.
+1. Build and install the **airhockapp** on both devices.
 2. Grant Bluetooth, Location (and advertising on Android 12+) permissions.
 3. On **Device 1** the app shows the Bluetooth strip; tap **Turn On** if Bluetooth is off (enabled in-app, no settings redirect).
 4. Optionally tap **Bluetooth Tethering** for the guide and enable tethering on the host for a more stable link.
@@ -122,13 +122,13 @@ Requires **two Android devices** with Bluetooth (BLE).
 ### Build
 
 ```bash
-./gradlew :sampleapp:assembleDebug
+./gradlew :airhockapp:assembleDebug
 ```
 
 Install the produced APK:
 
 ```bash
-./gradlew :sampleapp:installDebug
+./gradlew :airhockapp:installDebug
 ```
 
 ### Tests
@@ -136,7 +136,7 @@ Install the produced APK:
 The SDK contains unit tests for the binary protocol (round-trip encoding) and the physics engine (goal detection and wall bounces):
 
 ```bash
-./gradlew :sampleapp:testDebugUnitTest
+./gradlew :airhockapp:testDebugUnitTest
 ```
 
 ---

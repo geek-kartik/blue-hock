@@ -1,9 +1,11 @@
 package com.client.blekotsdk.api
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
+import androidx.annotation.RequiresPermission
 import com.client.blekotsdk.ble.BleAdapter
 import com.client.blekotsdk.ble.BleConnection
 import com.client.blekotsdk.ble.BleGattServer
@@ -130,5 +132,6 @@ object BleKotSdk {
     /**
      * Turns Bluetooth off directly. Best effort — restricted on Android 13+.
      */
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun disableBluetooth(): Boolean = BleAdapter(requireContext()).disable()
 }

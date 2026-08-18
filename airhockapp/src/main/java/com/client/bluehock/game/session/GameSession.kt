@@ -141,7 +141,7 @@ internal class GameSession(private val context: Context) {
             GamePhase.GOAL_PAUSE -> {
                 goalPauseRemaining -= dt
                 if (goalPauseRemaining <= 0f) {
-                    if (engine.score1 + engine.score2 >= GameConstants.TOTAL_GOALS) {
+                    if (engine.score1 >= GameConstants.WINNING_SCORE || engine.score2 >= GameConstants.WINNING_SCORE) {
                         phase = GamePhase.GAME_OVER
                         winner = if (engine.score1 > engine.score2) 1 else 2
                     } else {
@@ -236,7 +236,7 @@ internal class GameSession(private val context: Context) {
             puckY = engine.puckY,
             puckVx = engine.puckVx,
             puckVy = engine.puckVy,
-            totalGoals = GameConstants.TOTAL_GOALS,
+            totalGoals = GameConstants.WINNING_SCORE,
             isHost = true
         )
     }

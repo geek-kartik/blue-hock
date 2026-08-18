@@ -100,7 +100,7 @@ internal object GameProtocol {
             puckY = py,
             puckVx = pvx,
             puckVy = pvy,
-            totalGoals = if (totalGoals == 0) GameConstants.TOTAL_GOALS else totalGoals,
+            totalGoals = if (totalGoals == 0) GameConstants.WINNING_SCORE else totalGoals,
             isHost = false
         )
     }

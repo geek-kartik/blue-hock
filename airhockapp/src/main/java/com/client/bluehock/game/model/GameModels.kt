@@ -59,7 +59,7 @@ data class AirHockeyState(
     val puckY: Float = GameConstants.BOARD_HEIGHT / 2f,
     val puckVx: Float = 0f,
     val puckVy: Float = 0f,
-    val totalGoals: Int = GameConstants.TOTAL_GOALS,
+    val totalGoals: Int = GameConstants.WINNING_SCORE,
     val isHost: Boolean = false
 ) {
     /** 1 = host wins, 2 = client wins, 0 = no winner yet. */

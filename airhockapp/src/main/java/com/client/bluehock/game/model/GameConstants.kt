@@ -20,7 +20,7 @@ object GameConstants {
     const val GOAL_DEPTH = 6f
 
     // Game rules.
-    const val TOTAL_GOALS = 7
+    const val WINNING_SCORE = 7
     const val COUNTDOWN_SECONDS = 3
 
     // Physics tuning.

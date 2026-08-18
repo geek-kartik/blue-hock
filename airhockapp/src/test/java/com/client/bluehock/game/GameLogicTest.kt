@@ -28,7 +28,7 @@ class GameProtocolTest {
             puckY = 75.0f,
             puckVx = -12.3f,
             puckVy = 8.7f,
-            totalGoals = GameConstants.TOTAL_GOALS
+            totalGoals = GameConstants.WINNING_SCORE
         )
 
         val decoded = GameProtocol.decodeState(GameProtocol.encodeState(state))
@@ -45,7 +45,7 @@ class GameProtocolTest {
         assertEquals(75.0f, decoded.puckY, 0.05f)
         assertEquals(-12.3f, decoded.puckVx, 0.05f)
         assertEquals(8.7f, decoded.puckVy, 0.05f)
-        assertEquals(GameConstants.TOTAL_GOALS, decoded.totalGoals)
+        assertEquals(GameConstants.WINNING_SCORE, decoded.totalGoals)
     }
 
     @Test

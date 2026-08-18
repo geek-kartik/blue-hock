@@ -45,7 +45,7 @@ graph TD
 ## 2. Gameplay & Rules
 
 *   Two players, two devices: the **host** controls the bottom (red) paddle, the **client** the top (blue) paddle.
-*   The match runs until **7 goals are scored in total**. The player with the **most goals** is declared the winner.
+*   The match runs until one player scores **7 goals** — that player wins. If the other player has fewer goals, the game continues until one reaches 7.
 *   Every goal triggers a short pause, then the puck is re-centred for the next serve.
 *   After the winner screen, either player can tap **Play Again** to reset scores and restart with a fresh 3-2-1 countdown.
 
@@ -57,8 +57,8 @@ stateDiagram-v2
     WAITING_FOR_PLAYER --> COUNTDOWN : client sends READY
     COUNTDOWN --> PLAYING : 3-2-1 -> GO
     PLAYING --> GOAL_PAUSE : puck enters a goal
-    GOAL_PAUSE --> PLAYING : not yet 7 total goals
-    GOAL_PAUSE --> GAME_OVER : 7 total goals reached
+    GOAL_PAUSE --> PLAYING : neither player has 7 goals yet
+    GOAL_PAUSE --> GAME_OVER : a player reached 7 goals
     GAME_OVER --> COUNTDOWN : Play Again (RESTART)
 ```
 
@@ -117,7 +117,7 @@ Requires **two Android devices** with Bluetooth (BLE).
 5. On **Device 1** tap **Host Game** — it starts advertising and waits.
 6. On **Device 2** tap **Find Game**, select the discovered host, then **Join**.
 7. The countdown starts automatically; drag your half of the board to move your paddle.
-8. Play until **7 total goals**; the winner screen appears, then either player taps **Play Again**.
+8. Play until one player reaches **7 goals**; the winner screen appears, then either player taps **Play Again**.
 
 ### Build
 

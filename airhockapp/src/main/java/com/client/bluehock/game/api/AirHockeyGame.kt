@@ -14,9 +14,8 @@ import kotlinx.coroutines.flow.Flow
  * authoritative simulation and GATT server), the other joins by scanning,
  * connecting and streaming state snapshots.
  *
- * Game rule: play until [com.client.bluehock.game.model.GameConstants.TOTAL_GOALS]
- * goals are scored in total. The player with the most goals wins and the
- * match can be restarted.
+ * Game rule: first player to [com.client.bluehock.game.model.GameConstants.WINNING_SCORE]
+ * goals wins. The match can be restarted.
  *
  * Usage:
  *  - Host: [hostGame], then listen on [observeState].

@@ -24,5 +24,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "bluehock"
 include(":blekotsdk")
-include(":airhockapp")
+include(":sampleapp")
+project(":sampleapp").projectDir = file("airhockapp")
  

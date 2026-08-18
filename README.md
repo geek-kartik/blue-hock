@@ -122,13 +122,13 @@ Requires **two Android devices** with Bluetooth (BLE).
 ### Build
 
 ```bash
-./gradlew :airhockapp:assembleDebug
+./gradlew :sampleapp:assembleDebug
 ```
 
 Install the produced APK:
 
 ```bash
-./gradlew :airhockapp:installDebug
+./gradlew :sampleapp:installDebug
 ```
 
 ### Tests
@@ -136,7 +136,7 @@ Install the produced APK:
 The SDK contains unit tests for the binary protocol (round-trip encoding) and the physics engine (goal detection and wall bounces):
 
 ```bash
-./gradlew :airhockapp:testDebugUnitTest
+./gradlew :sampleapp:testDebugUnitTest
 ```
 
 ---

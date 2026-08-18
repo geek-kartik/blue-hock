@@ -1,5 +1,4 @@
 package com.client.blekotsdk.api
-
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Context

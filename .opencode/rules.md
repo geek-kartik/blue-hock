@@ -69,6 +69,6 @@ Hard rules for working in this repository. Follow these in addition to
 ## Verification
 
 - After changes, run the relevant tests: `./gradlew :blekotsdk:testDebugUnitTest`
-  for SDK logic, `./gradlew :airhockapp:testDebugUnitTest` for the game domain,
-  and `./gradlew :airhockapp:assembleDebug` for the app.
+  for SDK logic, `./gradlew :sampleapp:testDebugUnitTest` for the game domain,
+  and `./gradlew :sampleapp:assembleDebug` for the app.
 - Do not commit until the user asks.

@@ -30,7 +30,7 @@ UI-free domain layer (`com.client.bluehock.game`) on top of it.
 
 ```
 ble-connect-game/
-├── settings.gradle.kts        # rootProject.name = "bluehock"; includes :blekotsdk, :airhockapp
+├── settings.gradle.kts        # rootProject.name = "bluehock"; includes :blekotsdk, :sampleapp
 ├── build.gradle.kts           # top-level plugin aliases only
 ├── gradle/libs.versions.toml  # version catalog (single source of dependency versions)
 ├── blekotsdk/                 # public Android library — generic, app-agnostic BLE SDK
@@ -69,9 +69,9 @@ Run from the repository root (`./gradlew` wrapper):
 
 | Task | Command |
 | --- | --- |
-| Build the app APK | `./gradlew :airhockapp:assembleDebug` |
-| Install the app | `./gradlew :airhockapp:installDebug` |
-| Run unit tests (protocol + engine) | `./gradlew :airhockapp:testDebugUnitTest` |
+| Build the app APK | `./gradlew :sampleapp:assembleDebug` |
+| Install the app | `./gradlew :sampleapp:installDebug` |
+| Run unit tests (protocol + engine) | `./gradlew :sampleapp:testDebugUnitTest` |
 | Run all unit tests | `./gradlew testDebugUnitTest` |
 
 ## Key conventions

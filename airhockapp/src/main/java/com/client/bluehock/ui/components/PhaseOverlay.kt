@@ -34,8 +34,14 @@ import com.client.bluehock.game.model.GamePhase
 internal fun PhaseOverlay(
     state: AirHockeyState,
     isHost: Boolean,
+    playerName: String,
+    opponentName: String?,
+    lastScorer: Int,
     onRestart: () -> Unit
 ) {
+    val myName = playerName.ifBlank { "You" }
+    val opponent = opponentName?.trim()?.ifBlank { null } ?: "Opponent"
+
     when (state.phase) {
         GamePhase.WAITING_FOR_PLAYER -> {
             WaitingText(if (isHost) "Waiting for opponent..." else "Waiting for host...")
@@ -54,13 +60,16 @@ internal fun PhaseOverlay(
             }
         }
         GamePhase.GOAL_PAUSE -> {
-            val scorer = if (state.score1 > state.score2) "Player 1" else "Player 2"
+            val scorerIsHost = lastScorer == 1
+            val scorer = if (scorerIsHost == isHost) myName else opponent
             WaitingText("Goal! $scorer scores")
         }
         GamePhase.GAME_OVER -> {
             WinnerCard(
                 state = state,
                 isHost = isHost,
+                myName = myName,
+                opponentName = opponent,
                 onRestart = onRestart
             )
         }
@@ -90,6 +99,8 @@ private fun WaitingText(message: String) {
 private fun WinnerCard(
     state: AirHockeyState,
     isHost: Boolean,
+    myName: String,
+    opponentName: String,
     onRestart: () -> Unit
 ) {
     val youWon = if (isHost) state.winner == 1 else state.winner == 2
@@ -118,7 +129,7 @@ private fun WinnerCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Final score ${state.yourScore} - ${state.opponentScore}",
+                    text = "$myName ${state.yourScore} - ${state.opponentScore} $opponentName",
                     fontSize = 18.sp,
                     color = Color.Gray
                 )

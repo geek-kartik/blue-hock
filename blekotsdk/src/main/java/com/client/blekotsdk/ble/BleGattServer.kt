@@ -35,7 +35,8 @@ class BleGattServer(
     private val onWrite: (characteristicUuid: UUID, value: ByteArray) -> Unit,
     private val onConnectionChanged: (Boolean) -> Unit,
     private val onSubscribe: (characteristicUuid: UUID, subscribed: Boolean) -> Unit,
-    private val onError: (BleSdkError) -> Unit
+    private val onError: (BleSdkError) -> Unit,
+    private val onDeviceConnected: (deviceName: String?) -> Unit = {}
 ) {
 
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -62,6 +63,7 @@ class BleGattServer(
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 connectedDevice = device
                 onConnectionChanged(true)
+                onDeviceConnected(device.name)
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 if (connectedDevice?.address == device.address) {
                     connectedDevice = null

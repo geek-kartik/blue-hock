@@ -52,6 +52,9 @@ internal class GameSession(private val context: Context) {
     private val _errors = MutableSharedFlow<String>()
     val errors: Flow<String> = _errors.asSharedFlow()
 
+    private val _opponentName = MutableStateFlow<String?>(null)
+    val opponentName: Flow<String?> = _opponentName.asStateFlow()
+
     // Written by the BLE server binder thread (ready/connect callbacks) and
     // read by the host simulation loop thread, so they must be @Volatile.
     @Volatile private var phase = GamePhase.WAITING_FOR_PLAYER
@@ -87,11 +90,13 @@ internal class GameSession(private val context: Context) {
                 if (connected) {
                     onOpponentJoined()
                 } else {
+                    _opponentName.value = null
                     onOpponentLeft()
                 }
             },
             onClientReady = { onOpponentJoined() },
-            onError = { emitError(it) }
+            onError = { emitError(it) },
+            onDeviceConnected = { name -> _opponentName.value = name }
         ).also { it.start() }
 
         _connection.value = GameConnectionState.HOSTING
@@ -259,6 +264,7 @@ internal class GameSession(private val context: Context) {
     suspend fun connect(device: GameDeviceInfo) {
         if (isHost) return
         _connection.value = GameConnectionState.CONNECTING
+        _opponentName.value = device.name
 
         val c = GameBleClient(
             onState = { snapshot -> _state.value = snapshot },
@@ -329,6 +335,7 @@ internal class GameSession(private val context: Context) {
         isHost = false
         phase = GamePhase.WAITING_FOR_PLAYER
         winner = 0
+        _opponentName.value = null
         _connection.value = GameConnectionState.DISCONNECTED
         _state.value = AirHockeyState(isHost = false)
     }

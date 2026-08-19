@@ -22,6 +22,7 @@ import com.client.bluehock.ui.board.AirHockeyBoard
 import com.client.bluehock.ui.components.BluetoothStatusSection
 import com.client.bluehock.ui.components.ControlBar
 import com.client.bluehock.ui.components.DeviceListDialog
+import com.client.bluehock.ui.components.EditPlayerNameDialog
 import com.client.bluehock.ui.components.PhaseOverlay
 import com.client.bluehock.ui.components.ScoreHeader
 import com.client.bluehock.viewmodel.AirHockeyViewModel
@@ -38,6 +39,10 @@ fun AirHockeyScreen(viewModel: AirHockeyViewModel) {
     val scanning by viewModel.scanning.collectAsState()
     val myPaddle by viewModel.myPaddle.collectAsState()
     val logs by viewModel.logs.collectAsState()
+    val playerName by viewModel.playerName.collectAsState()
+    val opponentName by viewModel.opponentName.collectAsState()
+    val lastScorer by viewModel.lastScorer.collectAsState()
+    val showPlayerNameDialog by viewModel.showPlayerNameDialog.collectAsState()
     val isHost = viewModel.isHost
 
     Column(
@@ -49,7 +54,13 @@ fun AirHockeyScreen(viewModel: AirHockeyViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        ScoreHeader(state = state, isHost = isHost)
+        ScoreHeader(
+            state = state,
+            isHost = isHost,
+            playerName = playerName,
+            opponentName = opponentName,
+            onEditPlayerName = viewModel::showEditPlayerNameDialog
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -85,6 +96,9 @@ fun AirHockeyScreen(viewModel: AirHockeyViewModel) {
                 PhaseOverlay(
                     state = state,
                     isHost = isHost,
+                    playerName = playerName,
+                    opponentName = opponentName,
+                    lastScorer = lastScorer,
                     onRestart = viewModel::restart
                 )
             }
@@ -106,6 +120,14 @@ fun AirHockeyScreen(viewModel: AirHockeyViewModel) {
             devices = devices,
             onJoin = viewModel::connect,
             onDismiss = viewModel::stopScan
+        )
+    }
+
+    if (showPlayerNameDialog) {
+        EditPlayerNameDialog(
+            currentName = playerName,
+            onDismiss = viewModel::dismissPlayerNameDialog,
+            onConfirm = viewModel::savePlayerName
         )
     }
 }

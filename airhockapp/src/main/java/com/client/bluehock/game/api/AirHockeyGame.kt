@@ -111,4 +111,9 @@ internal object AirHockeyGame {
      * Observes domain errors surfaced to the UI.
      */
     fun observeErrors(): Flow<String> = requireSession().errors
+
+    /**
+     * Observes the opponent's BLE device name.
+     */
+    fun observeOpponentName(): Flow<String?> = requireSession().opponentName
 }

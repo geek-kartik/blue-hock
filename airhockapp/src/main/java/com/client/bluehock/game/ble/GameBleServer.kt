@@ -16,7 +16,8 @@ internal class GameBleServer(
     private val onControl: (Byte) -> Unit,
     private val onConnectionChange: (Boolean) -> Unit,
     private val onClientReady: () -> Unit,
-    private val onError: (String) -> Unit
+    private val onError: (String) -> Unit,
+    private val onDeviceConnected: (deviceName: String?) -> Unit = {}
 ) {
 
     private val server = BleKotSdk.newServer(
@@ -42,7 +43,8 @@ internal class GameBleServer(
                 onClientReady()
             }
         },
-        onError = { error -> onError(error.message ?: "BLE error") }
+        onError = { error -> onError(error.message ?: "BLE error") },
+        onDeviceConnected = onDeviceConnected
     )
 
     /**

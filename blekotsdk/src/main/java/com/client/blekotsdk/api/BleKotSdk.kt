@@ -84,9 +84,10 @@ object BleKotSdk {
         onWrite: (characteristicUuid: UUID, value: ByteArray) -> Unit,
         onConnectionChanged: (Boolean) -> Unit,
         onSubscribe: (characteristicUuid: UUID, subscribed: Boolean) -> Unit,
-        onError: (BleSdkError) -> Unit
+        onError: (BleSdkError) -> Unit,
+        onDeviceConnected: (deviceName: String?) -> Unit = {}
     ): BleGattServer =
-        BleGattServer(requireContext(), profile, onWrite, onConnectionChanged, onSubscribe, onError)
+        BleGattServer(requireContext(), profile, onWrite, onConnectionChanged, onSubscribe, onError, onDeviceConnected)
 
     /**
      * Runtime permissions required for BLE scan, connect and advertise on the

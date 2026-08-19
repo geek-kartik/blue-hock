@@ -3,10 +3,12 @@ package com.client.bluehock.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.client.bluehock.data.PlayerPreferences
 import com.client.bluehock.game.api.AirHockeyGame
 import com.client.bluehock.game.model.AirHockeyState
 import com.client.bluehock.game.model.GameConnectionState
 import com.client.bluehock.game.model.GameDeviceInfo
+import com.client.bluehock.game.model.GamePhase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +39,22 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
     private val _myPaddle = MutableStateFlow<Pair<Float, Float>?>(null)
     val myPaddle: StateFlow<Pair<Float, Float>?> = _myPaddle.asStateFlow()
 
+    private val _playerName = MutableStateFlow("")
+    val playerName: StateFlow<String> = _playerName.asStateFlow()
+
+    private val _showPlayerNameDialog = MutableStateFlow(false)
+    val showPlayerNameDialog: StateFlow<Boolean> = _showPlayerNameDialog.asStateFlow()
+
+    private val _opponentName = MutableStateFlow<String?>(null)
+    val opponentName: StateFlow<String?> = _opponentName.asStateFlow()
+
+    /** 1 = host (player 1) scored, 2 = client (player 2) scored, 0 = unknown. */
+    private val _lastScorer = MutableStateFlow(0)
+    val lastScorer: StateFlow<Int> = _lastScorer.asStateFlow()
+
+    private var prevScore1 = 0
+    private var prevScore2 = 0
+
     val isHost: Boolean
         get() = AirHockeyGame.isHost()
 
@@ -45,11 +63,24 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
     init {
         AirHockeyGame.initialize(getApplication())
 
+        val saved = PlayerPreferences.getPlayerName(getApplication())
+        if (saved.isNullOrBlank()) {
+            _showPlayerNameDialog.value = true
+        } else {
+            _playerName.value = saved
+        }
+
         viewModelScope.launch {
-            AirHockeyGame.observeState().collect { _state.value = it }
+            AirHockeyGame.observeState().collect { newState ->
+                detectScorer(_state.value, newState)
+                _state.value = newState
+            }
         }
         viewModelScope.launch {
             AirHockeyGame.observeConnection().collect { _connection.value = it }
+        }
+        viewModelScope.launch {
+            AirHockeyGame.observeOpponentName().collect { _opponentName.value = it }
         }
         viewModelScope.launch {
             AirHockeyGame.observeErrors().collect { error -> addLog("ERROR: $error") }
@@ -98,6 +129,9 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun disconnect() {
         _myPaddle.value = null
+        _lastScorer.value = 0
+        prevScore1 = 0
+        prevScore2 = 0
         viewModelScope.launch { AirHockeyGame.disconnect() }
     }
 
@@ -118,5 +152,40 @@ class AirHockeyViewModel(application: Application) : AndroidViewModel(applicatio
 
     private fun addLog(message: String) {
         _logs.value = (_logs.value + message).takeLast(200)
+    }
+
+    fun showEditPlayerNameDialog() {
+        _showPlayerNameDialog.value = true
+    }
+
+    fun dismissPlayerNameDialog() {
+        _showPlayerNameDialog.value = false
+    }
+
+    fun savePlayerName(name: String) {
+        if (name.isBlank()) return
+        PlayerPreferences.savePlayerName(getApplication(), name)
+        _playerName.value = name
+        _showPlayerNameDialog.value = false
+    }
+
+    /**
+     * Compares previous and current scores to determine who just scored.
+     * Called before updating the state so the scorer is known when the
+     * UI enters GOAL_PAUSE phase.
+     */
+    private fun detectScorer(prev: AirHockeyState, current: AirHockeyState) {
+        if (current.phase == GamePhase.GOAL_PAUSE && prev.phase != GamePhase.GOAL_PAUSE) {
+            when {
+                current.score1 > prevScore1 -> _lastScorer.value = 1
+                current.score2 > prevScore2 -> _lastScorer.value = 2
+                else -> _lastScorer.value = 0
+            }
+        }
+        if (current.phase == GamePhase.COUNTDOWN && prev.phase == GamePhase.WAITING_FOR_PLAYER) {
+            _lastScorer.value = 0
+        }
+        prevScore1 = current.score1
+        prevScore2 = current.score2
     }
 }
